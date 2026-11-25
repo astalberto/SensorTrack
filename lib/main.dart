@@ -1,21 +1,13 @@
+// Arranque de la app e inicialización de Supabase.
+// Responsable: Alberto
+
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'app/app.dart';
+import 'shared/datos/supabase_service.dart';
+
 Future<void> main() async {
-WidgetsFlutterBinding.ensureInitialized();
-await Supabase.initialize(
-url: 'https://opurxdxtyhvftgrvtoez.supabase.co',
-publishableKey: 'sb_publishable_pVYYvZf9OpPQd8l-1FyRjQ_oqyLccjT',
-);
-runApp(const MyApp());
-}
-class MyApp extends StatelessWidget {
-const MyApp({super.key});
-@override
-Widget build(BuildContext context) {
-return MaterialApp(
-debugShowCheckedModeBanner: false,
-title: 'SensorTrack',
-home: const HomePage(),
-);
-}
+  WidgetsFlutterBinding.ensureInitialized();
+  await SupabaseService.inicializar();
+  runApp(const SensorTrackApp());
 }
