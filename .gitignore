@@ -46,3 +46,8 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Credenciales locales de Supabase (ver README). Solo se sube la plantilla.
+/env/*
+!/env/ejemplo.json
+.env

@@ -12,7 +12,10 @@ import '../features/ubicacion/ubicacion.dart';
 import 'rutas.dart';
 
 class SensorTrackApp extends StatelessWidget {
-  const SensorTrackApp({super.key});
+  const SensorTrackApp({super.key, this.crearHomeEstado});
+
+  /// Solo para pruebas: estado de Home sin Supabase ni sensores reales.
+  final HomeEstado Function()? crearHomeEstado;
 
   @override
   Widget build(BuildContext context) {
@@ -20,9 +23,10 @@ class SensorTrackApp extends StatelessWidget {
       title: 'SensorTrack',
       debugShowCheckedModeBanner: false,
       theme: TemaApp.claro,
+      darkTheme: TemaApp.oscuro,
       initialRoute: Rutas.home,
       routes: {
-        Rutas.home: (_) => const HomePage(),
+        Rutas.home: (_) => HomePage(crearEstado: crearHomeEstado),
         Rutas.sensores: (_) => const SensoresPage(),
         Rutas.ubicacion: (_) => const UbicacionPage(),
         Rutas.historial: (_) => const HistorialPage(),

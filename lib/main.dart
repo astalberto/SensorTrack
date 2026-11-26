@@ -8,6 +8,12 @@ import 'shared/datos/supabase_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SupabaseService.inicializar();
+  // Si Supabase no se puede inicializar, la app arranca igual: Home muestra
+  // "sin conexión" y el resto de pantallas informan el error al usarlas.
+  try {
+    await SupabaseService.inicializar();
+  } catch (error) {
+    debugPrint('No se pudo inicializar Supabase: $error');
+  }
   runApp(const SensorTrackApp());
 }
