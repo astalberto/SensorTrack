@@ -4,7 +4,7 @@ Asignatura: Desarrollo de Plataformas Móviles
 Integrantes: Alberto, Josué, Cody
 Coordina: Alberto. Cada integrante redacta las secciones de sus features.
 
-> Estado: las secciones 1, 2 y 3 están redactadas (Alberto). Las secciones 4 a 7 están pendientes.
+> Estado: las secciones 1, 2 y 3 están redactadas (Alberto), y la 4 y la 7 (Cody). Las secciones 5, 6 y 8 están pendientes.
 
 ---
 
@@ -80,7 +80,25 @@ lib/
 
 ## 4. M2 · GPS (`ubicacion`) (Cody)
 
-_Pendiente: permisos, estados de captura, política de uso de ubicación (7.4) y mapa opcional._
+**Qué hace**
+
+- Botón **Obtener ubicación** que lee una sola posición del GPS y muestra latitud, longitud (6 decimales), precisión en metros, fecha y hora.
+- Botón **Guardar medición** (de `registro`), visible solo cuando hay una posición. Recibe una `SensorReading` de tipo `gps` con `latitude`, `longitude` y `accuracy`, y sin `x`, `y`, `z`.
+- Ícono en la barra para volver a leer la política de uso de ubicación.
+
+**Decisiones**
+
+- **Consentimiento antes de capturar.** La primera vez en cada sesión se muestra la política 7.4 (para qué se usa, que solo se captura al pulsar el botón, que solo se guarda al pulsar Guardar y que el equipo ve los datos). Si el usuario no acepta, no se lee el GPS.
+- **Una lectura por pulsación, sin stream.** No hay captura continua ni en segundo plano, así que no queda ninguna suscripción abierta al salir. El manifiesto de Android pide solo ubicación en primer plano (`ACCESS_FINE_LOCATION` y `ACCESS_COARSE_LOCATION`).
+- **Permisos.** El permiso se pide al pulsar el botón. `LocationService` traduce cada caso a `UbicacionException`, un `AppException` con el problema concreto:
+  - *GPS desactivado:* botón **Abrir ajustes** de ubicación del sistema.
+  - *Permiso denegado:* botón **Reintentar**, que vuelve a pedirlo.
+  - *Permiso bloqueado* (denegado para siempre): botón **Abrir ajustes** de la app.
+  - *Sin señal:* la espera máxima es de 20 segundos. Luego se pide probar al aire libre y se ofrece **Reintentar**.
+- **Hora de captura.** `recorded_at` es el `timestamp` de la posición que entrega geolocator.
+- **Mapa.** Opcional y pendiente. Las coordenadas cubren el requisito del taller (decisión "Mapa").
+
+**Archivos:** `servicios/location_service.dart`, `estado/ubicacion_estado.dart`, `pantallas/ubicacion_page.dart`, `widgets/politica_ubicacion.dart`.
 
 ## 5. M3 · Registro en Supabase (`registro`) (Josué)
 
@@ -92,7 +110,21 @@ _Pendiente: filtros, paginación y detalle._
 
 ## 7. M5 · Estadísticas (`estadisticas`) (Cody)
 
-_Pendiente: conteos, máximos y mínimos, última ubicación, gráfico y filtro por `capturado_por`._
+**Qué muestra**
+
+- **Cantidad total de registros** y **mediciones por sensor** (acelerómetro, giroscopio y GPS).
+- **Máximos y mínimos del acelerómetro** por eje (X, Y, Z), con el número de mediciones usadas.
+- **Última ubicación registrada:** latitud, longitud, precisión y fecha.
+- **Gráfico de evolución** (fl_chart) de X, Y y Z en orden temporal, con selector entre acelerómetro y giroscopio. Muestra las últimas 100 mediciones como máximo.
+- Se actualiza deslizando hacia abajo o con el botón de la barra. Si falla la conexión, muestra el mensaje y **Reintentar**.
+
+**Decisiones**
+
+- **Solo a través del repositorio.** Los cálculos usan la interfaz `ReadingsRepository` (`contarPorTipo` y `listar`), nunca Supabase directamente. Así se prueban con un repositorio en memoria.
+- **Máximos y mínimos en el teléfono.** Se leen las lecturas del acelerómetro en páginas de 500, con un tope de 5000. Si la tabla crece, conviene agregar al repositorio un método de agregación que lo calcule en la base.
+- **Datos de los tres integrantes.** No se filtra por `capturado_por`: la tabla del taller no tiene esa columna y las estadísticas deben coincidir con la tabla completa (prueba "Comparar conteos").
+
+**Archivos:** `servicios/estadisticas_calculo.dart`, `estado/estadisticas_estado.dart`, `pantallas/estadisticas_page.dart`, `widgets/grafico_evolucion.dart`.
 
 ## 8. Base de datos compartida (Josué)
 
@@ -104,6 +136,8 @@ _Pendiente: esquema de `sensor_readings`, restricciones, índices, políticas RL
 |---|---|---|
 | home | `test/features/home/home_estado_test.dart`, `test/widget_test.dart` | Sección 9 del documento de arquitectura: pendiente |
 | sensores | `test/features/sensores/*_test.dart` | Sección 9: pendiente |
+| ubicacion | `test/features/ubicacion/ubicacion_estado_test.dart` | Sección 9: pendiente |
+| estadisticas | `test/features/estadisticas/estadisticas_calculo_test.dart` | Sección 9: pendiente |
 | Resto | _Cada responsable_ | _Cada responsable_ |
 
 ## 10. Registro de decisiones
@@ -115,3 +149,5 @@ _Pendiente: esquema de `sensor_readings`, restricciones, índices, políticas RL
 | Disponibilidad de sensores | Suscribirse y esperar la primera muestra hasta 2 s | Sin comprobación | sensors_plus no tiene una API para listar sensores | Alberto |
 | GPS en Home | Solo si el servicio está activado, sin pedir permiso | Pedir permiso al abrir la app | El permiso se pide al capturar (política 7.4) | Alberto |
 | Credenciales | `--dart-define-from-file=env/dev.json`, ignorado por Git | Solo `--dart-define` sueltos | Menos errores al ejecutar; el archivo nunca se sube | Alberto |
+| Captura de GPS | Una lectura por pulsación, con política aceptada antes | Stream continuo de posiciones | No se guarda ubicación sin autorización; ninguna suscripción queda abierta | Cody |
+| Máximos y mínimos | Calculados en el teléfono, hasta 5000 lecturas | Consulta de agregación en Supabase | La interfaz del repositorio no tiene agregaciones; se puede migrar después | Cody |
