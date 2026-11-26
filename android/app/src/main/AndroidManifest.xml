@@ -2,6 +2,11 @@
     <!-- Supabase necesita internet. El manifiesto de debug ya lo trae, pero sin
          esta línea la APK de release no puede conectarse. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Ubicación solo en primer plano (feature ubicacion, responsable: Cody).
+         No se pide ACCESS_BACKGROUND_LOCATION: la app no captura en segundo plano. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
     <application
         android:label="SensorTrack"
         android:name="${applicationName}"
