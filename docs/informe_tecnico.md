@@ -4,7 +4,7 @@ Asignatura: Desarrollo de Plataformas Móviles
 Integrantes: Alberto, Josué, Cody
 Coordina: Alberto. Cada integrante redacta las secciones de sus features.
 
-> Estado: las secciones 1, 2 y 3 están redactadas (Alberto), y la 4 y la 7 (Cody). Las secciones 5, 6 y 8 están pendientes.
+> Estado: todas las secciones están redactadas: 1, 2 y 3 (Alberto), 4 y 7 (Cody), 5, 6 y 8 (Josué). Faltan los resultados de las pruebas en dispositivo físico.
 
 ---
 
@@ -102,11 +102,53 @@ lib/
 
 ## 5. M3 · Registro en Supabase (`registro`) (Josué)
 
-_Pendiente: validación por `sensor_type`, estados de guardado, manejo de errores y frecuencia._
+`registro` no tiene pantalla propia. Publica un solo widget, **`GuardarMedicionButton`**, que Sensores (y más adelante Ubicación) pone como `floatingActionButton`. Recibe una función que devuelve la lectura actual, así `registro` no depende de la feature que lo usa.
+
+**Qué hace al pulsar el botón**
+
+1. Pide la lectura a la función. Si devuelve `null`, avisa *Todavía no hay datos del sensor para guardar*.
+2. Comprueba la frecuencia máxima: **una medición cada 2 segundos**.
+3. Valida la lectura con `ValidadorLectura`.
+4. La guarda con `ReadingsRepository.guardar` y muestra el resultado en un SnackBar: *Medición guardada.* o el mensaje de error en rojo.
+
+**Validación** (tabla 4.4 del documento de arquitectura)
+
+| `sensor_type` | Debe traer | No debe traer |
+|---|---|---|
+| `accelerometer`, `gyroscope` | `x`, `y`, `z` finitos | `latitude`, `longitude`, `accuracy` |
+| `gps` | latitud entre −90 y 90, longitud entre −180 y 180, precisión ≥ 0 | `x`, `y`, `z` |
+
+`capturado_por` es obligatorio y va en minúsculas sin tildes (`alberto`, `josue`, `cody`). Son las mismas reglas que los CHECK de la base (sección 8): la app avisa antes de enviar, con un mensaje claro, y la base es la segunda barrera.
+
+**Estados:** `inactivo`, `guardando`, `exito` y `error`. Mientras guarda, el botón muestra *Guardando…* y no responde a más toques.
+
+**Errores.** El repositorio traduce todo a `AppException` con mensaje en español: sin internet o tiempo agotado (`conexion`), rechazo por RLS (`permiso`) y datos rechazados por la base (`validacion`). La app nunca se cierra al guardar sin conexión.
+
+**Decisiones**
+
+- **Frecuencia en `registro`.** Sensores ya guarda solo cuando el usuario lo pide. `registro` además impide dos guardados en menos de 2 s, para que los toques repetidos no dupliquen registros. Un guardado fallido no cuenta, así se puede reintentar enseguida.
+- **Guardado después de salir.** Si el usuario sale de la pantalla mientras se guarda, la operación termina igual, pero el estado ya liberado no notifica.
+
+**Archivos:** `widgets/guardar_medicion_button.dart`, `estado/registro_estado.dart`, `servicios/validador_lectura.dart`.
 
 ## 6. M4 · Historial (`historial`) (Josué)
 
-_Pendiente: filtros, paginación y detalle._
+**Qué muestra**
+
+- **Lista** de las mediciones de los tres integrantes, de la más reciente a la más antigua. Cada fila trae el tipo, los valores principales, la fecha y hora local y quién la capturó.
+- **Filtros:** por tipo (*Todos*, *Acelerómetro*, *Giroscopio*, *GPS*) y *Solo míos*, que filtra por el `CAPTURADO_POR` del teléfono. *Solo míos* no aparece si `CAPTURADO_POR` está vacío.
+- **Paginación** de 20 registros. La página siguiente se pide al acercarse al final de la lista. También se puede actualizar deslizando hacia abajo o con el botón de la barra.
+- **Detalle** al tocar un registro: todos los campos, con unidades (m/s², rad/s, grados, metros), la hora local y la hora UTC guardada.
+- **Estados:** cargando, vacío (con un texto distinto si hay filtro), error con **Reintentar**, y *No existe el registro* en el detalle.
+
+**Decisiones**
+
+- **Respuestas viejas.** Si el usuario cambia de filtro antes de que llegue la respuesta anterior, esa respuesta se descarta.
+- **Filas nuevas entre páginas.** Si otro integrante guarda mientras alguien recorre el historial, el desplazamiento se corre y podría repetirse una fila. Las filas repetidas se descartan por `id`.
+- **Error al cargar más.** Se conserva lo que ya estaba cargado y se muestra **Reintentar** al final. El desplazamiento no reintenta por su cuenta.
+- **Navegación al detalle.** La lista abre el detalle directamente y le pasa su misma consulta. La ruta `Rutas.detalleRegistro` del shell también funciona.
+
+**Archivos:** `pantallas/historial_page.dart`, `pantallas/detalle_registro_page.dart`, `estado/historial_estado.dart`, `estado/detalle_registro_estado.dart`, `servicios/historial_consulta.dart`, `widgets/`.
 
 ## 7. M5 · Estadísticas (`estadisticas`) (Cody)
 
@@ -128,7 +170,38 @@ _Pendiente: filtros, paginación y detalle._
 
 ## 8. Base de datos compartida (Josué)
 
-_Pendiente: esquema de `sensor_readings`, restricciones, índices, políticas RLS y migraciones._
+Un solo proyecto de Supabase con una tabla, `sensor_readings`. El esquema se crea con la migración `supabase/migrations/20261125120000_crear_sensor_readings.sql`. La configuración paso a paso está en la [guía de Supabase](supabase_configuracion.md).
+
+**Tabla `sensor_readings`**
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | `bigint` identity | Lo genera la base |
+| `sensor_type` | `text` | `accelerometer`, `gyroscope` o `gps` |
+| `x`, `y`, `z` | `double precision` | Solo acelerómetro y giroscopio |
+| `latitude`, `longitude`, `accuracy` | `double precision` | Solo GPS |
+| `recorded_at` | `timestamptz` | Hora real de captura, enviada por la app en UTC |
+| `capturado_por` | `text` | Integrante: `alberto`, `josue` o `cody` |
+
+**Restricciones:** tipo válido, campos según el tipo, rangos de coordenadas y formato de `capturado_por`. Son las mismas que valida `registro`.
+
+**Índices:** `recorded_at` descendente, para el historial, y `(sensor_type, recorded_at)`, para el filtro por tipo y los conteos de estadísticas.
+
+**Seguridad.** La app usa la clave pública con el rol `anon`. RLS está activado.
+
+| Rol | SELECT | INSERT | UPDATE | DELETE |
+|---|---|---|---|---|
+| `anon`, `authenticated` | Todas las filas | Si cumple los CHECK | No | No |
+
+Los permisos se dan con un `GRANT` explícito de SELECT e INSERT, que además quita TRUNCATE (TRUNCATE no pasa por RLS). Los datos de prueba los borran Josué o el docente desde el panel.
+
+**Acceso desde la app.** Solo `lib/shared/datos/` habla con Supabase:
+
+- `SupabaseService`: inicializa el cliente y comprueba la conexión para Home. Nunca lanza.
+- `ReadingsRepository`: la interfaz que usan las features (`guardar`, `listar`, `obtenerPorId`, `contarPorTipo`).
+- `SupabaseReadingsRepository`: la implementación. Ordena por `recorded_at` y `id`, pagina con `range`, cuenta con peticiones HEAD sin descargar filas y corta cada operación a los 15 s. Traduce los errores de PostgreSQL y de red a `AppException`.
+
+**Limitación conocida.** supabase 2.16.5 ignora `retryEnabled` en `SupabaseClient.from()`. Por eso, sin internet, las lecturas reintentan 3 veces y tardan unos 7 s en mostrar el error.
 
 ## 9. Pruebas
 
@@ -138,7 +211,11 @@ _Pendiente: esquema de `sensor_readings`, restricciones, índices, políticas RL
 | sensores | `test/features/sensores/*_test.dart` | Sección 9: pendiente |
 | ubicacion | `test/features/ubicacion/ubicacion_estado_test.dart` | Sección 9: pendiente |
 | estadisticas | `test/features/estadisticas/estadisticas_calculo_test.dart` | Sección 9: pendiente |
-| Resto | _Cada responsable_ | _Cada responsable_ |
+| registro | `test/features/registro/*_test.dart` | Sección 9: pendiente |
+| historial | `test/features/historial/*_test.dart` | Sección 9: pendiente |
+| datos compartidos | `test/shared/datos/supabase_readings_repository_test.dart`, contra un servidor simulado | Evidencia en el panel de Supabase: pendiente |
+
+`test/helpers/repositorio_en_memoria.dart` es un `ReadingsRepository` en memoria que cualquier feature puede usar en sus pruebas, con lecturas de ejemplo de los tres tipos.
 
 ## 10. Registro de decisiones
 
@@ -151,3 +228,9 @@ _Pendiente: esquema de `sensor_readings`, restricciones, índices, políticas RL
 | Credenciales | `--dart-define-from-file=env/dev.json`, ignorado por Git | Solo `--dart-define` sueltos | Menos errores al ejecutar; el archivo nunca se sube | Alberto |
 | Captura de GPS | Una lectura por pulsación, con política aceptada antes | Stream continuo de posiciones | No se guarda ubicación sin autorización; ninguna suscripción queda abierta | Cody |
 | Máximos y mínimos | Calculados en el teléfono, hasta 5000 lecturas | Consulta de agregación en Supabase | La interfaz del repositorio no tiene agregaciones; se puede migrar después | Cody |
+| Validación de lecturas | CHECK por tipo en la base y las mismas reglas en la app | Validar solo en la app | Ninguna versión de la app puede guardar filas inconsistentes; la app avisa antes con un mensaje claro | Josué |
+| Formato de `capturado_por` | Minúsculas sin tildes: `alberto`, `josue`, `cody` | Texto libre | Los conteos por persona de estadísticas necesitan valores idénticos | Josué |
+| Permisos de la tabla | `GRANT SELECT, INSERT` explícito al rol `anon`, más RLS | Depender de los permisos por defecto | En nuestro proyecto `anon` no tenía permisos (la API respondía 401); además se quitan UPDATE, DELETE y TRUNCATE | Josué |
+| Tabla creada a mano | La migración la reemplaza solo si está vacía y se detiene si tiene datos | `create table if not exists` | `if not exists` dejaría en silencio una tabla sin restricciones ni RLS | Josué |
+| Frecuencia de guardado en `registro` | Una medición cada 2 s; un fallo no cuenta | Sin límite | Evita registros duplicados por toques repetidos | Josué |
+| Paginación del historial | Páginas de 20 por desplazamiento, descartando ids repetidos | Paginación por cursor | Respeta la interfaz `ReadingsRepository` acordada; si llegan filas nuevas entre páginas no se repiten | Josué |
