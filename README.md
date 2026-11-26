@@ -22,9 +22,10 @@ App Flutter de la asignatura Desarrollo de Plataformas Móviles. Lee el aceleró
    {
      "SUPABASE_URL": "https://<proyecto>.supabase.co",
      "SUPABASE_KEY": "<clave pública>",
-     "CAPTURADO_POR": "<tu nombre>"
+     "CAPTURADO_POR": "josue"
    }
    ```
+   `CAPTURADO_POR` es `alberto`, `josue` o `cody`: en minúsculas y sin tildes. La base rechaza otros formatos (ver [la guía de Supabase](docs/supabase_configuracion.md#6-valores-de-capturado_por)).
 3. Ejecuta en el teléfono:
    ```
    flutter run --dart-define-from-file=env/dev.json
@@ -71,5 +72,6 @@ Transversal:
 - [Convenciones de código y Git](docs/convenciones.md)
 - [Informe técnico](docs/informe_tecnico.md)
 - [Plan de trabajo de Alberto](docs/plan_alberto.md)
-- Guía de configuración de Supabase: pendiente (Josué)
+- [Guía de configuración de Supabase](docs/supabase_configuracion.md)
+- [Contratos entre features](docs/contratos.md)
 - Guía de permisos de ubicación: pendiente (Cody)

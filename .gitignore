@@ -51,3 +51,7 @@ app.*.map.json
 /env/*
 !/env/ejemplo.json
 .env
+
+# Archivos temporales de la CLI de Supabase.
+supabase/.temp/
+supabase/.branches/
