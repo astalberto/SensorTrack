@@ -80,10 +80,12 @@ lib/features/<nombre>/
 |---|---|
 | `main` | Versión entregable. Solo recibe merges desde `develop`, con revisión |
 | `develop` | Integración diaria |
-| `feature/<feature>` | Trabajo de cada feature: `feature/home`, `feature/sensores`, `feature/registro`, `feature/historial`, `feature/ubicacion`, `feature/estadisticas` |
+| `module_<feature>_<feature>` | Una rama por integrante con sus dos features: `module_home_sensores` (Alberto), `module_registro_historial` (Josué), `module_ubicacion_estadisticas` (Cody) |
 | `feature/db` | Migraciones y esquema. Solo Josué |
 
-Se sale de `develop` y se vuelve a `develop` por PR. Antes de abrir el PR, actualiza tu rama con `develop`.
+El documento de arquitectura (6.1) proponía una rama `feature/<feature>` por feature. El equipo usa una rama `module_...` por integrante, y esta tabla sigue esa práctica.
+
+Se sale de `develop` y se vuelve a `develop` por PR. Mientras `develop` no esté publicada en GitHub, se sale de `main`. Antes de abrir el PR, actualiza tu rama con la rama destino.
 
 ### Commits
 

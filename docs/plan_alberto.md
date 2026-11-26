@@ -53,7 +53,8 @@ Leyenda: `[x]` hecho · `[ ]` pendiente · 📱 requiere dispositivo físico · 
 - [ ] 📱 Evidencia de sensores: video corto moviendo y girando el teléfono. Ya hay capturas en `docs/evidencias/`.
 - [ ] 🤝 Guía de demostración con los tres (orden y responsable por pantalla).
 - [ ] 🤝 Coordinar el informe técnico: Josué y Cody redactan sus secciones.
-- [ ] Publicar `develop` y abrir el PR de `feature/home-sensores` hacia `develop`, con revisión de Cody (tabla 6.2).
+- [x] Rama `module_home_sensores` publicada en GitHub (mismo formato que las ramas de Josué y Cody).
+- [ ] Publicar `develop` y abrir el PR de `module_home_sensores` hacia `develop`, con revisión de Cody (tabla 6.2).
 
 ### Pruebas de Alberto (sección 9)
 
