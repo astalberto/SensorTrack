@@ -74,4 +74,4 @@ Transversal:
 - [Plan de trabajo de Alberto](docs/plan_alberto.md)
 - [Guía de configuración de Supabase](docs/supabase_configuracion.md)
 - [Contratos entre features](docs/contratos.md)
-- Guía de permisos de ubicación: pendiente (Cody)
+- [Guía de permisos de ubicación](docs/guia_permisos_ubicacion.md)

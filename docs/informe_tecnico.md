@@ -4,7 +4,11 @@ Asignatura: Desarrollo de Plataformas Móviles
 Integrantes: Alberto, Josué, Cody
 Coordina: Alberto. Cada integrante redacta las secciones de sus features.
 
+<<<<<<< HEAD
+> Estado: las secciones 1, 2 y 3 están redactadas (Alberto), y la 4 y la 7 (Cody). Las secciones 5, 6 y 8 están pendientes.
+=======
 > Estado: todas las secciones están redactadas: 1, 2 y 3 (Alberto), 4 y 7 (Cody), 5, 6 y 8 (Josué). Faltan los resultados de las pruebas en dispositivo físico.
+>>>>>>> 5cdf93c1848133a28b3859e8594a24e9d14ebff2
 
 ---
 
@@ -211,11 +215,15 @@ Los permisos se dan con un `GRANT` explícito de SELECT e INSERT, que además qu
 | sensores | `test/features/sensores/*_test.dart` | Sección 9: pendiente |
 | ubicacion | `test/features/ubicacion/ubicacion_estado_test.dart` | Sección 9: pendiente |
 | estadisticas | `test/features/estadisticas/estadisticas_calculo_test.dart` | Sección 9: pendiente |
+<<<<<<< HEAD
+| Resto | _Cada responsable_ | _Cada responsable_ |
+=======
 | registro | `test/features/registro/*_test.dart` | Sección 9: pendiente |
 | historial | `test/features/historial/*_test.dart` | Sección 9: pendiente |
 | datos compartidos | `test/shared/datos/supabase_readings_repository_test.dart`, contra un servidor simulado | Evidencia en el panel de Supabase: pendiente |
 
 `test/helpers/repositorio_en_memoria.dart` es un `ReadingsRepository` en memoria que cualquier feature puede usar en sus pruebas, con lecturas de ejemplo de los tres tipos.
+>>>>>>> 5cdf93c1848133a28b3859e8594a24e9d14ebff2
 
 ## 10. Registro de decisiones
 
@@ -228,9 +236,12 @@ Los permisos se dan con un `GRANT` explícito de SELECT e INSERT, que además qu
 | Credenciales | `--dart-define-from-file=env/dev.json`, ignorado por Git | Solo `--dart-define` sueltos | Menos errores al ejecutar; el archivo nunca se sube | Alberto |
 | Captura de GPS | Una lectura por pulsación, con política aceptada antes | Stream continuo de posiciones | No se guarda ubicación sin autorización; ninguna suscripción queda abierta | Cody |
 | Máximos y mínimos | Calculados en el teléfono, hasta 5000 lecturas | Consulta de agregación en Supabase | La interfaz del repositorio no tiene agregaciones; se puede migrar después | Cody |
+<<<<<<< HEAD
+=======
 | Validación de lecturas | CHECK por tipo en la base y las mismas reglas en la app | Validar solo en la app | Ninguna versión de la app puede guardar filas inconsistentes; la app avisa antes con un mensaje claro | Josué |
 | Formato de `capturado_por` | Minúsculas sin tildes: `alberto`, `josue`, `cody` | Texto libre | Los conteos por persona de estadísticas necesitan valores idénticos | Josué |
 | Permisos de la tabla | `GRANT SELECT, INSERT` explícito al rol `anon`, más RLS | Depender de los permisos por defecto | En nuestro proyecto `anon` no tenía permisos (la API respondía 401); además se quitan UPDATE, DELETE y TRUNCATE | Josué |
 | Tabla creada a mano | La migración la reemplaza solo si está vacía y se detiene si tiene datos | `create table if not exists` | `if not exists` dejaría en silencio una tabla sin restricciones ni RLS | Josué |
 | Frecuencia de guardado en `registro` | Una medición cada 2 s; un fallo no cuenta | Sin límite | Evita registros duplicados por toques repetidos | Josué |
 | Paginación del historial | Páginas de 20 por desplazamiento, descartando ids repetidos | Paginación por cursor | Respeta la interfaz `ReadingsRepository` acordada; si llegan filas nuevas entre páginas no se repiten | Josué |
+>>>>>>> 5cdf93c1848133a28b3859e8594a24e9d14ebff2
