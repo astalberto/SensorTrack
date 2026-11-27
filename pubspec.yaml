@@ -49,6 +49,9 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  # Servidor simulado (MockClient) para probar SupabaseReadingsRepository
+  # sin tocar la base compartida.
+  http: ^1.6.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
